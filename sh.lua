@@ -119,6 +119,34 @@ M.timeout = function(cmd) return command("timeout", cmd) end
 -- export convenience function to extract the output of a command
 M.unwrap = function(t) return t.__input end
 
+-- export colors utilities
+local tput = command("tput")
+M.RESET = M.unwrap(tput("sgr0"))
+M.RED = M.unwrap(tput("setaf", "1"))
+M.GREEN = M.unwrap(tput("setaf", "2"))
+M.BLACK = M.unwrap(tput("setaf", "0"))
+M.GREEN = M.unwrap(tput("setaf", "2"))
+M.BLUE = M.unwrap(tput("setaf", "4"))
+M.CYAN = M.unwrap(tput("setaf", "6"))
+M.WHITE = M.unwrap(tput("setaf", "7"))
+M.YELLOW = M.unwrap(tput("setaf", "3"))
+M.MAGENTA = M.unwrap(tput("setaf", "5"))
+
+local echo = command("echo")
+local quote = function(s) return "'" .. s .. "'" end
+
+-- function to pretty print a string
+function M.pprint(msg, color) return echo(quote(color .. msg .. M.RESET)):print() end
+
+-- function to print a message in green
+function M.success(msg) return echo(quote(M.GREEN .. msg .. M.RESET)):print() end
+
+-- function to print a message in yellow
+function M.warn(msg) return echo(quote(M.YELLOW .. msg .. M.RESET)):print() end
+
+-- function to print a message in red
+function M.err(msg) return echo(quote(M.RED .. msg .. M.RESET)):print() end
+
 -- allow to call sh to read enviroment variables or run shell commands
 setmetatable(M, {
 	__call = function(_, var, ...)

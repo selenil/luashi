@@ -110,6 +110,12 @@ end
 M.command = command
 M.tmpfile = '/tmp/shluainput'
 
+-- export some conveniences for common prefixes
+M.sudo = function(cmd) return command("sudo", cmd) end
+M.nice = function(cmd) return command("nice", cmd) end
+M.time = function(cmd) return command("time", cmd) end
+M.timeout = function(cmd) return command("timeout", cmd) end
+
 -- allow to call sh to read enviroment variables or run shell commands
 setmetatable(M, {
 	__call = function(_, var, ...)

@@ -116,6 +116,9 @@ M.nice = function(cmd) return command("nice", cmd) end
 M.time = function(cmd) return command("time", cmd) end
 M.timeout = function(cmd) return command("timeout", cmd) end
 
+-- export convenience function to extract the output of a command
+M.unwrap = function(t) return t.__input end
+
 -- allow to call sh to read enviroment variables or run shell commands
 setmetatable(M, {
 	__call = function(_, var, ...)

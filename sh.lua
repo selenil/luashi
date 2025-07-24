@@ -3,15 +3,15 @@ local M = {}
 -- converts key and it's argument to "-k" or "-k=v" or just ""
 local function arg(k, a)
 	if not a then return k end
-	if type(a) == 'string' and #a > 0 then return k..'=\''..a..'\'' end
-	if type(a) == 'number' then return k..'='..tostring(a) end
+	if type(a) == 'string' and #a > 0 then return k .. '=\'' .. a .. '\'' end
+	if type(a) == 'number' then return k .. '=' .. tostring(a) end
 	if type(a) == 'boolean' and a == true then return k end
 	error('invalid argument type', type(a), a)
 end
 
 -- converts nested tables into a flat list of arguments and concatenated input
 local function flatten(t)
-	local result = {args = {}, input = ''}
+	local result = { args = {}, input = '' }
 
 	local function f(t)
 		local keys = {}
@@ -28,8 +28,8 @@ local function flatten(t)
 			if k == '__input' then
 				result.input = result.input .. v
 			elseif not keys[k] and k:sub(1, 1) ~= '_' then
-				local key = '-'..k
-				if #k > 1 then key = '-' ..key end
+				local key = '-' .. k
+				if #k > 1 then key = '-' .. key end
 				table.insert(result.args, arg(key, v))
 			end
 		end
@@ -42,9 +42,9 @@ end
 -- returns a function that executes the command with given args and returns its
 -- output, exit status etc
 local function command(cmd, ...)
-	local prearg = {...}
+	local prearg = { ... }
 	return function(...)
-		local args = flatten({...})
+		local args = flatten({ ... })
 		local s = cmd
 		for _, v in ipairs(prearg) do
 			s = s .. ' ' .. v
@@ -57,7 +57,7 @@ local function command(cmd, ...)
 			local f = io.open(M.tmpfile, 'w')
 			f:write(args.input)
 			f:close()
-			s = s .. ' <'..M.tmpfile
+			s = s .. ' <' .. M.tmpfile
 		end
 		local p = io.popen(s, 'r')
 		local output = p:read('*a')
@@ -82,26 +82,38 @@ local function command(cmd, ...)
 	end
 end
 
+-- hook for undefined variables
+-- if a variable only consists of capital letters,
+-- we treat it as environment variable,
+-- otherwise we treat it like a shell command
+local function handle_undefined_variable(var, ...)
+	if var == string.upper(var) then
+		return os.getenv(var)
+	end
+
+	return command(var, ...)
+end
+
 -- get global metatable
 local mt = getmetatable(_G)
 if mt == nil then
-  mt = {}
-  setmetatable(_G, mt)
+	mt = {}
+	setmetatable(_G, mt)
 end
 
 -- set hook for undefined variables
-mt.__index = function(t, cmd)
-	return command(cmd)
+mt.__index = function(_, var)
+	return handle_undefined_variable(var)
 end
 
 -- export command() function and configurable temporary "input" file
 M.command = command
 M.tmpfile = '/tmp/shluainput'
 
--- allow to call sh to run shell commands
+-- allow to call sh to read enviroment variables or run shell commands
 setmetatable(M, {
-	__call = function(_, cmd, ...)
-		return command(cmd, ...)
+	__call = function(_, var, ...)
+		return handle_undefined_variable(var, ...)
 	end
 })
 

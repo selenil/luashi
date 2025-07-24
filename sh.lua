@@ -83,9 +83,9 @@ local function command(cmd, ...)
 end
 
 -- hook for undefined variables
--- if a variable only consists of capital letters,
--- we treat it as environment variable,
--- otherwise we treat it like a shell command
+-- returns the value of the corresponding enviroment variable
+-- if the undefined variable only consists of capital letters,
+-- otherwise executes it as a shell command
 local function handle_undefined_variable(var, ...)
 	if var == string.upper(var) then
 		return os.getenv(var)
@@ -110,13 +110,19 @@ end
 M.command = command
 M.tmpfile = '/tmp/shluainput'
 
--- export some conveniences for common prefixes
-M.sudo = function(cmd) return command("sudo", cmd) end
-M.nice = function(cmd) return command("nice", cmd) end
-M.time = function(cmd) return command("time", cmd) end
-M.timeout = function(cmd) return command("timeout", cmd) end
+-- returns a command function prefixed with "sudo"
+function M.sudo(cmd) return command("sudo", cmd) end
 
--- export convenience function to extract the output of a command
+-- returns a command function prefixed with "nice"
+function M.nice(cmd) return command("nice", cmd) end
+
+-- returns a command function prefixed with "time"
+function M.time(cmd) return command("time", cmd) end
+
+-- returns a command function prefixed with "timeout"
+function M.timeout(cmd) return command("timeout", cmd) end
+
+-- extracts the output of a command
 M.unwrap = function(t) return t.__input end
 
 -- export colors utilities
@@ -135,17 +141,17 @@ M.MAGENTA = M.unwrap(tput("setaf", "5"))
 local echo = command("echo")
 local quote = function(s) return "'" .. s .. "'" end
 
--- function to pretty print a string
+-- pretty prints a string to the terminal
 function M.pprint(msg, color) return echo(quote(color .. msg .. M.RESET)):print() end
 
--- function to print a message in green
-function M.success(msg) return echo(quote(M.GREEN .. msg .. M.RESET)):print() end
+-- pretty prints a message in green to the terminal
+function M.success(msg) return M.pprint(msg, M.GREEN) end
 
--- function to print a message in yellow
-function M.warn(msg) return echo(quote(M.YELLOW .. msg .. M.RESET)):print() end
+-- pretty prints a message in yellow to the terminal
+function M.warn(msg) return M.pprint(msg, M.YELLOW) end
 
--- function to print a message in red
-function M.err(msg) return echo(quote(M.RED .. msg .. M.RESET)):print() end
+-- pretty prints a message in red to the terminal
+function M.err(msg) return M.pprint(msg, M.RED) end
 
 -- allow to call sh to read enviroment variables or run shell commands
 setmetatable(M, {

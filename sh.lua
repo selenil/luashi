@@ -39,6 +39,13 @@ local function flatten(t)
 	return result
 end
 
+-- iterates over the output of a command following bash rules
+-- TODO: Improve this implementation
+local function iter(o)
+	return string.gmatch(o, "[^\n]+")
+end
+
+
 -- returns a function that executes the command with given args and returns its
 -- output, exit status etc
 local function command(cmd, ...)
@@ -66,12 +73,18 @@ local function command(cmd, ...)
 
 		local t = {
 			__input = output,
+			__iter = iter(output),
 			__exitcode = exit == 'exit' and status or 127,
 			__signal = exit == 'signal' and status or 0,
+			__current = 0,
 		}
 		local mt = {
 			__index = function(self, k, ...)
 				return _G[k] --, ...
+			end,
+			__call = function(self)
+				-- allow to use it as an iterator
+				return self.__iter()
 			end,
 			__tostring = function(self)
 				-- return trimmed command output as a string

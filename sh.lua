@@ -42,7 +42,7 @@ end
 -- iterates over the output of a command following bash rules
 -- TODO: Improve this implementation
 local function iter(o)
-	return string.gmatch(o, "[^\n]+")
+	return string.gmatch(o, "%S+")
 end
 
 
@@ -76,7 +76,6 @@ local function command(cmd, ...)
 			__iter = iter(output),
 			__exitcode = exit == 'exit' and status or 127,
 			__signal = exit == 'signal' and status or 0,
-			__current = 0,
 		}
 		local mt = {
 			__index = function(self, k, ...)
@@ -155,7 +154,9 @@ local echo = command("echo")
 local quote = function(s) return "'" .. s .. "'" end
 
 -- pretty prints a string to the terminal
-function M.pprint(msg, color) return echo(quote(color .. msg .. M.RESET)):print() end
+function M.pprint(msg, color)
+	return echo(quote(color .. tostring(msg) .. M.RESET)):print()
+end
 
 -- pretty prints a message in green to the terminal
 function M.success(msg) return M.pprint(msg, M.GREEN) end

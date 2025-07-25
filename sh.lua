@@ -1,3 +1,5 @@
+local posix = require "posix"
+
 local M = {}
 
 -- converts key and it's argument to "-k" or "-k=v" or just ""
@@ -94,6 +96,32 @@ local function command(cmd, ...)
 	end
 end
 
+-- same as command(), but runs the cmd in as a background process
+-- without blocking the main thread and without capturing output
+-- returns the pid of the started process
+local function defer(cmd, ...)
+	local prearg = { ... }
+	return function(...)
+		local args = flatten({ ... })
+		local s = cmd
+		for _, v in ipairs(prearg) do
+			s = s .. ' ' .. v
+		end
+		for k, v in pairs(args.args) do
+			s = s .. ' ' .. v
+		end
+
+		local pid = posix.fork()
+		if pid == 0 then
+			-- dont handle output
+			s = s .. ' > /dev/null'
+			io.popen(s, "r"):close()
+		end
+
+		return pid
+	end
+end
+
 -- hook for undefined variables
 -- returns the value of the corresponding enviroment variable
 -- if the undefined variable only consists of capital letters,
@@ -118,8 +146,9 @@ mt.__index = function(_, var)
 	return handle_undefined_variable(var)
 end
 
--- export command() function and configurable temporary "input" file
+-- export command() and defer() functions, and configurable temporary "input" file
 M.command = command
+M.defer = defer
 M.tmpfile = '/tmp/shluainput'
 
 -- returns a command function prefixed with "sudo"

@@ -151,6 +151,29 @@ M.command = command
 M.defer = defer
 M.tmpfile = '/tmp/shluainput'
 
+-- sets an environment variable
+function M.export(var, name, overwrite)
+	return posix.stdlib.setenv(var, name, overwrite)
+end
+
+-- changes the current working directory
+-- optionally takes a callback as its last argument to run after the change
+function M.cd(to, cb)
+	status, errstr, errno = posix.unistd.chdir(to)
+	if cb then cb() end
+
+	return status, errstr, errno
+end
+
+-- runs a callback inside a given directory
+-- and the returns to the previous directory
+function M.run_in(to, cb)
+	local pwd = command("pwd")()
+
+	M.cd(to, cb)
+	return M.cd(tostring(pwd))
+end
+
 -- returns a command function prefixed with "sudo"
 function M.sudo(cmd) return command("sudo", cmd) end
 

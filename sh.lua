@@ -187,7 +187,7 @@ function M.time(cmd) return command("time", cmd) end
 function M.timeout(cmd) return command("timeout", cmd) end
 
 -- extracts the output of a command
-M.unwrap = function(t) return t.__input end
+M.unwrap = function(t) return tostring(t) end
 
 -- export colors utilities
 local tput = command("tput")

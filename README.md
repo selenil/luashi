@@ -8,9 +8,8 @@ Tiny library for shell scripting with Lua (inspired by Python's sh module).
 
 Via luarocks:
 
-```
-luarocks install luashi
-
+```bash
+luarocks install --server=https://luarocks.org/dev luashi
 ```
 
 From source: 

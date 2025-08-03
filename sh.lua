@@ -164,7 +164,7 @@ end
 -- optionally takes a callback as its last argument to run after the change
 function M.cd(to, cb)
 	status, errstr, errno = posix.unistd.chdir(to)
-	if cb then cb() end
+	if cb and status == 0 then cb() end
 
 	return status, errstr, errno
 end

@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: luarocks/gh-actions-lua@v10
+        with:
+          luaVersion: '5.4'
+
+      - uses: luarocks/gh-actions-luarocks@v5
+
+      - name: setup
+        run: |
+          luarocks make
+          luarocks install busted
+
+      - name: test
+        run: |
+          busted -o utfTerminal test.lua

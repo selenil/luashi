@@ -219,6 +219,36 @@ function M.warn(msg) return M.pprint(msg, M.YELLOW) end
 -- pretty prints a message in red to the terminal
 function M.err(msg) return M.pprint(msg, M.RED) end
 
+-- Prompts the user for a yes/no question and returns
+-- true if the selection was 'yes' or 'y', or false if it was 'no' or 'n'.
+-- This function repeats the question until a valid answer is given.
+function M.prompt(question)
+	local tty_in = io.open("/dev/tty", "r")
+	local tty_out = io.open("/dev/tty", "w")
+	if not tty_in or not tty_out then
+		error("Unable to access /dev/tty")
+	end
+
+	while true do
+		tty_out:write(question .. " (yes/y or no/n): ")
+		tty_out:flush()
+		local response = tty_in:read("*l")
+		if response then
+			response = response:lower()
+			if response == "yes" or response == "y" then
+				tty_in:close()
+				tty_out:close()
+				return true
+			elseif response == "no" or response == "n" then
+				tty_in:close()
+				tty_out:close()
+				return false
+			end
+		end
+		tty_out:write("Invalid response. Please type 'yes', 'y', 'no', or 'n'.\n")
+	end
+end
+
 -- allow to call sh to read enviroment variables or run shell commands
 setmetatable(M, {
 	__call = function(_, var, ...)

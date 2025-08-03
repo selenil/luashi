@@ -206,12 +206,9 @@ M.WHITE = M.unwrap(tput("setaf", "7"))
 M.YELLOW = M.unwrap(tput("setaf", "3"))
 M.MAGENTA = M.unwrap(tput("setaf", "5"))
 
-local echo = command("echo")
-local quote = function(s) return "'" .. s .. "'" end
-
 -- pretty prints a string to the terminal
 function M.pprint(msg, color)
-	return echo(quote(color .. tostring(msg) .. M.RESET)):print()
+	return print(color .. msg .. M.RESET)
 end
 
 -- pretty prints a message in green to the terminal

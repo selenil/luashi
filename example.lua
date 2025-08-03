@@ -82,7 +82,7 @@ sh.run_in("my_dir2", function() print("we are in my_dir2")) end)
 print(pwd()) -- my_dir1
 
 -- sh module defines color constants created using tput for printing in the terminal
-echo("'" .. sh.GREEN .. "It works!" .. sh.RESET .. "'"):print() -- prints the messages in green
+print(sh.GREEN .. "It works!" .. sh.RESET) -- prints the messages in green
 
 -- shortcut for the above
 sh.pprint("It works!", sh.GREEN)

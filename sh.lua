@@ -96,7 +96,7 @@ local function command(cmd, ...)
 	end
 end
 
--- same as command(), but runs the cmd in as a background process
+-- same as command(), but runs the cmd as a background process
 -- without blocking the main thread and without capturing output
 -- returns the pid of the started process
 local function defer(cmd, ...)
@@ -113,9 +113,13 @@ local function defer(cmd, ...)
 
 		local pid = posix.fork()
 		if pid == 0 then
-			-- dont handle output
-			s = s .. ' > /dev/null'
-			io.popen(s, "r"):close()
+			-- Redirect both stdout and stderr to /dev/null
+			local null_dev = "/dev/null"
+			os.execute(cmd .. " > " .. null_dev .. " 2>&1")
+			os.exit(0) -- Ensure the child process exits
+		elseif pid < 0 then
+			-- Fork failed
+			error("Failed to start background process")
 		end
 
 		return pid
